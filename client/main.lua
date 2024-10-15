@@ -189,8 +189,8 @@ local function createRegisters()
         for k, v in pairs(sharedConfig.registers) do
             exports.ox_target:addBoxZone({
                 coords = v.coords,
-                size = vec3(1.5, 1.5, 1.5),
-                rotation = 0.0,
+                size = v.size,
+                rotation = v.rotation,
                 debug = config.debugPoly,
                 options = {
                     {
