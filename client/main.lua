@@ -22,7 +22,7 @@ local function openingRegisterHandler(lockpickTime)
             Wait(2000)
             lockpickTime = lockpickTime - 2000
             TriggerServerEvent('qbx_storerobbery:server:registerOpened', false)
-            TriggerServerEvent('hud:server:GainStress', math.random(1, 3))
+            --TriggerServerEvent('hud:server:GainStress', math.random(1, 3))
             if lockpickTime <= 0 then
                 openingRegister = false
                 StopAnimTask(cache.ped, 'veh@break_in@0h@p_m_one@', 'low_force_entry_ds', 1.0)
@@ -43,23 +43,19 @@ local function checkInteractStatus(register)
     if sharedConfig.registers[register].robbed then
         return false
     end
-
     local leoCount = lib.callback.await('qbx_storerobbery:server:leoCount', false)
     if leoCount > sharedConfig.minimumCops then
         return true
     end
-
     return false
 end
 
 local function alertPolice()
     local hours = GetClockHours()
     local chance = config.policeAlertChance
-
     if qbx.isWearingGloves() or hours >= 1 and hours <= 6 then
         chance = config.policeNightAlertChance
     end
-
     if math.random() <= chance then
         TriggerServerEvent('police:server:policeAlert')
     end
@@ -195,8 +191,8 @@ local function createRegisters()
                 options = {
                     {
                         name = k..'_register',
-                        icon = 'cash-register',
-                        label = 'Open Register',
+                        icon = 'fas fa-arrow-down-up-lock',
+                        label = 'Rob Register',
                         canInteract = function()
                             return checkInteractStatus(k)
                         end,

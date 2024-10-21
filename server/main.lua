@@ -34,10 +34,8 @@ RegisterNetEvent('qbx_storerobbery:server:checkStatus', function()
     local coords = GetEntityCoords(GetPlayerPed(source))
     local closestRegisterIndex = getClosestRegister(coords)
     if not closestRegisterIndex then return end
-
     local hasLockpick = exports.ox_inventory:Search(source, 'count', 'lockpick') > 0
     local hasAdvanced = exports.ox_inventory:Search(source, 'count', 'advancedlockpick') > 0
-
     if hasLockpick then
         TriggerClientEvent('qbx_storerobbery:client:initRegisterAttempt', source, false)
     elseif hasAdvanced then
@@ -45,7 +43,6 @@ RegisterNetEvent('qbx_storerobbery:server:checkStatus', function()
     else
         exports.qbx_core:Notify(source, 'You don\'t have the appropriate items', 'error')
     end
-
     startedRegister[source] = true
     sharedConfig.registers[closestRegisterIndex].robbed = true
 end)
@@ -54,7 +51,6 @@ RegisterNetEvent('qbx_storerobbery:server:registerFailed', function(isUsingAdvan
     local coords = GetEntityCoords(GetPlayerPed(source))
     local closestRegisterIndex = getClosestRegister(coords)
     local removalChance = isUsingAdvanced and math.random(0, 30) or math.random(0, 60)
-
     startedRegister[source] = false
     sharedConfig.registers[closestRegisterIndex].robbed = false
     if removalChance > math.random(0, 100) then
@@ -84,30 +80,26 @@ RegisterNetEvent('qbx_storerobbery:server:registerOpened', function(isDone)
     local player = exports.qbx_core:GetPlayer(source)
     local coords = GetEntityCoords(GetPlayerPed(source))
     local closestRegisterIndex = getClosestRegister(coords)
-
     if not closestRegisterIndex then return end
     if #(coords - sharedConfig.registers[closestRegisterIndex].coords) > 2 then return end
     if not startedRegister[source] then return end
-
     player.Functions.AddMoney('cash', math.random(config.registerReward.min, config.registerReward.max))
-
     TriggerClientEvent('qbx_storerobbery:client:updatedRobbables', -1, sharedConfig.registers, sharedConfig.safes)
     if config.registerReward.chanceAtSticky > math.random(0, 100) then
         local code = safeCodes[sharedConfig.registers[closestRegisterIndex].safeKey]
         local info
         if sharedConfig.safes[sharedConfig.registers[closestRegisterIndex].safeKey].type == 'keypad' then
             info = {
-                label = locale('text.safe_code') .. tostring(code)
+                content = locale('text.safe_code') .. tostring(code)
             }
         else
             info = {
-                label = locale('text.safe_code') .. tostring(math.floor((code[1] % 360) / 3.60)) .. "-" .. tostring(math.floor((code[2] % 360) / 3.60)) .. "-" .. tostring(math.floor((code[3] % 360) / 3.60)) .. "-" .. tostring(math.floor((code[4] % 360) / 3.60)) .. "-" .. tostring(math.floor((code[5] % 360) / 3.60))
+                content = locale('text.safe_code') .. tostring(math.floor((code[1] % 360) / 3.60)) .. "-" .. tostring(math.floor((code[2] % 360) / 3.60)) .. "-" .. tostring(math.floor((code[3] % 360) / 3.60)) .. "-" .. tostring(math.floor((code[4] % 360) / 3.60)) .. "-" .. tostring(math.floor((code[5] % 360) / 3.60))
             }
         end
-
-        exports.ox_inventory:AddItem(source, 'stickynote', 1, info)
+        --exports.ox_inventory:AddItem(source, 'stickynote', 1, info)
+        exports.ox_inventory:AddItem(source, 'notepadpage', 1, info)
     end
-
     startedRegister[source] = false
     SetTimeout(math.random(config.registerRefresh.min, config.registerRefresh.max), function()
         sharedConfig.registers[closestRegisterIndex].robbed = false
@@ -120,13 +112,11 @@ RegisterNetEvent('qbx_storerobbery:server:trySafe', function()
     local playerCoords = GetEntityCoords(src)
     local closestSafeIndex = getClosestSafe(playerCoords)
     local leoCount = exports.qbx_core:GetDutyCountType('leo')
-
     if not closestSafeIndex then return end
     if leoCount < sharedConfig.minimumCops and sharedConfig.notEnoughCopsNotify then
         exports.qbx_core:Notify(source, locale('error.no_police', {Required = config.minimumCops}), 'error')
         return
     end
-
     sharedConfig.safes[closestSafeIndex].robbed = true
     startedSafe[source] = true
     TriggerClientEvent('qbx_storerobbery:client:initSafeAttempt', source, closestSafeIndex, safeCodes[closestSafeIndex])
@@ -145,17 +135,13 @@ RegisterNetEvent('qbx_storerobbery:server:safeCracked', function()
     local closestSafeIndex = getClosestSafe(playerCoords)
     local worthMarkedBills = math.random(config.safeReward.markedBillsWorth.min, config.safeReward.markedBillsWorth.max)
     local numMarkedBills = math.random(config.safeReward.markedBillsAmount.min, config.safeReward.markedBillsAmount.max)
-
     if not closestSafeIndex then return end
     if not startedSafe[source] then return end
-
     local billsMeta = {
         worth = worthMarkedBills,
         description = locale('text.value', { value = worthMarkedBills })
     }
-
     player.Functions.AddItem('markedbills', numMarkedBills, false, billsMeta)
-
     if config.safeReward.chanceAtSpecial > math.random(0, 100) then
         player.Functions.AddItem('rolex', math.random(config.safeReward.rolexAmount.min, config.safeReward.rolexAmount.max))
         if config.safeReward.chanceAtSpecial / 2 > math.random(0, 100) then
